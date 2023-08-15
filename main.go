@@ -58,7 +58,11 @@ func main() {
 
 	v1Router.Get("/healthz", handlerReadiness) //path to see if server is live and running
 	v1Router.Get("/err", handlerError)
-	v1Router.Post("/users", apiCfg.handlerCreateUser) //route to create user
+	v1Router.Post("/users", apiCfg.handlerCreateUser)                    //route to create user
+	v1Router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser)) //route to get user
+
+	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed)) //route to create feed
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)                           //route to get feeds
 
 	router.Mount("/v1", v1Router)
 

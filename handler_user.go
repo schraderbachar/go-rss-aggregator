@@ -34,5 +34,12 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		respondWithError(w, 400, fmt.Sprintf("Couldn't create user: %v", err))
 	}
 
-	respondWithJSON(w, 200, databaseUserToUser(user)) //created new func to get a better looking json object
+	respondWithJSON(w, 201, databaseUserToUser(user)) //created new func to get a better looking json object
+}
+
+/**
+*	*Gets the user by their API Key
+ */
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
+	respondWithJSON(w, 200, databaseUserToUser(user)) //casts user object to the nicely formatted one we defined
 }
