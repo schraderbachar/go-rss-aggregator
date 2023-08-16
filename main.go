@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -20,6 +21,7 @@ type apiConfig struct {
 }
 
 func main() {
+
 	godotenv.Load()
 	portString := os.Getenv("PORT")
 	if portString == "" {
@@ -35,10 +37,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Can't connect to databse")
 	}
-
+	db := database.New(conn)
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
+
+	//scrape for feeds
+	go startScraping(db, 10, time.Minute)
 
 	//* connecting to server
 	router := chi.NewRouter()
@@ -63,6 +68,12 @@ func main() {
 
 	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed)) //route to create feed
 	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)                           //route to get feeds
+
+	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
+	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
+	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
+
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetPostsForUser))
 
 	router.Mount("/v1", v1Router)
 
